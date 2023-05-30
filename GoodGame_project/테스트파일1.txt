@@ -1,0 +1,279 @@
+package map;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+public class Game {
+    public static void main(String[] ar) {
+        GameFrame fms = new GameFrame();
+    }
+}
+
+class GameFrame extends JFrame implements KeyListener, Runnable {
+    int f_width;
+    int f_height;
+
+    Player player;
+    ArrayList<Attack> attackList = new ArrayList<>();
+
+    Thread th;
+    Toolkit tk = Toolkit.getDefaultToolkit();
+    Image playerImg;
+    Image attackImg;
+
+    Image buffImage;
+    Graphics buffg;
+
+    GameFrame() {
+        init();
+        start();
+
+        setTitle("슈팅 게임 만들기");
+        setSize(f_width, f_height);
+        Dimension screen = tk.getScreenSize();
+
+        int f_xpos = (int) (screen.getWidth() / 2 - f_width / 2);
+        int f_ypos = (int) (screen.getHeight() / 2 - f_height / 2);
+
+        setLocation(f_xpos, f_ypos);
+        setResizable(false);
+        setVisible(true);
+    }
+
+    public void init() {
+        f_width = 1280;
+        f_height = 900;
+
+
+        Image originalPlayerImg = tk.getImage("D:\\workspase_intelliJ_IDEA\\javaJazz\\gg\\src\\imgfiles\\ooo.png");
+        playerImg = originalPlayerImg.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+
+        attackImg = tk.getImage("D:\\workspase_intelliJ_IDEA\\javaJazz\\gg\\src\\imgfiles\\attack.png");
+        player = new Player(100, 100, playerImg);
+
+
+    }
+
+    public void start() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        addKeyListener(this);
+        th = new Thread(this);
+        th.start();
+    }
+
+    public void run() {
+        try {
+            while (true) {
+                KeyProcess();
+                AttackProcess();
+                repaint();
+                Thread.sleep(20);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    public void AttackProcess() {
+        if (player.isAttackKeyPressed()) {
+            Attack attack = new Attack(player.getX(), player.getY(), player.getPrevKeyCode(), attackImg);
+            attackList.add(attack);
+        }
+    }
+
+    public void paint(Graphics g) {
+        buffImage = createImage(f_width, f_height);
+        buffg = buffImage.getGraphics();
+
+        DrawPlayer();
+        DrawAttacks();
+
+        g.drawImage(buffImage, 0, 0, this);
+    }
+
+    public void DrawPlayer() {
+        buffg.clearRect(0, 0, f_width, f_height);
+        // 맵 이미지
+        Image mapImg = tk.getImage("D:\\workspase_intelliJ_IDEA\\javaJazz\\gg\\src\\imgfiles\\map.jpg");
+        buffg.drawImage(mapImg, 0, 0, 1280,900,null);
+
+        player.draw(buffg);
+    }
+
+    public void DrawAttacks() {
+        for (int i = 0; i < attackList.size(); ++i) {
+            Attack attack = attackList.get(i);
+            attack.draw(buffg);
+            attack.move();
+
+            if (attack.getX() > f_width) {
+                attackList.remove(i);
+            }
+        }
+    }
+
+    public void keyPressed(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+
+        switch (keyCode) {
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+                player.setDirection(keyCode);
+                break;
+            case KeyEvent.VK_SPACE:
+                player.setAttackKeyPressed(true);
+                break;
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        int keyCode = e.getKeyCode();
+
+        switch (keyCode) {
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+                player.setDirection(0);
+                break;
+            case KeyEvent.VK_SPACE:
+                player.setAttackKeyPressed(false);
+                break;
+        }
+    }
+
+    public void keyTyped(KeyEvent e) {
+    }
+
+    public void KeyProcess() {
+        player.move();
+    }
+}
+
+class Player {
+    private int x;
+    private int y;
+    private int direction;
+    private boolean attackKeyPressed;
+    private int prevKeyCode;
+
+    private Image img;
+
+    Player(int x, int y, Image img) {
+        this.x = x;
+        this.y = y;
+        this.img = img;
+    }
+
+    public void move() {
+        switch (direction) {
+            case KeyEvent.VK_UP:
+                y -= 20;
+                break;
+            case KeyEvent.VK_DOWN:
+                y += 20;
+                break;
+            case KeyEvent.VK_LEFT:
+                x -= 20;
+                break;
+            case KeyEvent.VK_RIGHT:
+                x += 20;
+                break;
+        }
+
+        // 추가된 부분: 이동 중 방향키를 눌렀을 때 바로 이동 방향 변경
+        switch (direction) {
+            case KeyEvent.VK_UP, KeyEvent.VK_DOWN -> {
+                if (y % 50 == 0) {
+                    if (prevKeyCode == KeyEvent.VK_LEFT || prevKeyCode == KeyEvent.VK_RIGHT) {
+                        x = x / 50 * 50;  // 이동 방향 변경 시 x 좌표를 그리드에 정렬
+                    }
+                }
+            }
+            case KeyEvent.VK_LEFT, KeyEvent.VK_RIGHT -> {
+                if (x % 50 == 0) {
+                    if (prevKeyCode == KeyEvent.VK_UP || prevKeyCode == KeyEvent.VK_DOWN) {
+                        y = y / 50 * 50;  // 이동 방향 변경 시 y 좌표를 그리드에 정렬
+                    }
+                }
+            }
+        }
+    }
+
+    public void draw(Graphics g) {
+        g.drawImage(img, x, y, null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getPrevKeyCode() {
+        return prevKeyCode;
+    }
+
+    public void setDirection(int direction) {
+        this.direction = direction;
+        if (direction != 0) {
+            this.prevKeyCode = direction;
+        }
+    }
+
+    public boolean isAttackKeyPressed() {
+        return attackKeyPressed;
+    }
+
+    public void setAttackKeyPressed(boolean attackKeyPressed) {
+        this.attackKeyPressed = attackKeyPressed;
+    }
+}
+
+class Attack {
+    private int x;
+    private int y;
+    private int direction;
+    private Image img;
+
+    Attack(int x, int y, int direction, Image img) {
+        this.x = x;
+        this.y = y;
+        this.direction = direction;
+        this.img = img;
+    }
+
+    public void move() {
+        switch (direction) {
+            case KeyEvent.VK_UP:
+                y -= 10;
+                break;
+            case KeyEvent.VK_DOWN:
+                y += 10;
+                break;
+            case KeyEvent.VK_LEFT:
+                x -= 10;
+                break;
+            case KeyEvent.VK_RIGHT:
+                x += 10;
+                break;
+        }
+    }
+
+    public void draw(Graphics g) {
+        g.drawImage(img, x+15 , y+50 , null);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+}
