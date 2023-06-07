@@ -72,8 +72,8 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         isItemActive = false;
 
         playerHealthImages = new ArrayList<>();
-        for (int i = 0; i <5; i++) {
-            String imagePath = "D:/workspase_intelliJ_IDEA/javaJazz/gg/src/imgfiles/player_hp.png";
+        for (int i = 0; i <5; i++) { //하트 5개 생성
+            String imagePath = "D:\\workspase_intelliJ_IDEA\\javaJazz\\gg\\src\\imgfiles\\player_hp.png";
 
             try {
                 Image healthImage = ImageIO.read(new File(imagePath));
@@ -102,9 +102,6 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
     public void actionPerformed(ActionEvent e) {
         player.move(upPressed, downPressed, leftPressed, rightPressed);
         monster.chasePlayer(player);
-
-
-
 
         if (monster.getProjectileCooldown() == 0) {
             int direction = (int) (Math.random() * 4);
@@ -175,25 +172,21 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         }
         if (e.getSource() == itemTimer) {
             if (!isItemActive) {
-                item = new Item(SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 50, 50);
+                item = new Item(SCREEN_WIDTH / 2 - 25, SCREEN_HEIGHT / 2 - 25, 15, 15);
                 isItemActive = true;
             }
         }
-
-
-        // 플레이어와 아이템의 충돌을 확인하고 처리합니다.
-        checkItemCollision();
         //플레이어와 아이템이 충돌했을때 플레이어의 체력을 회복함!
         if (isItemActive) {
+            //System.out.println("작동");
             if (player.intersects(item)) {
-                playerHealth += 20;
-                if (playerHealth > 100) {
-                    playerHealth = 100;
-                }
-                isItemActive = false;
-                // false로 해서 다음 아이템 호출 대기
+                player.heal(); // 체력 회복
+                isItemActive = false; // 아이템 비활성화
+                // 아이템을 먹었을 때 추가로 처리해야 할 작업이 있다면 여기에 작성합니다.
             }
         }
+        // 플레이어와 아이템의 충돌을 확인하고 처리합니다.
+        checkItemCollision();
 
 
         if (!isItemActive && itemTimer.getDelay() == 0) {
@@ -230,7 +223,7 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         int y = 30;
 
         if (isItemActive) {
-            item.draw(g, "D:\\workspase_intelliJ_IDEA\\javaJazz\\gg\\src\\imgfiles\\player_0hp.png"); // 아이템 이미지 경로를 적절히 수정해야 합니다.
+            item.draw(g, "D:\\workspase_intelliJ_IDEA\\javaJazz\\gg\\src\\imgfiles\\player_hp.png"); // 아이템 이미지 경로를 적절히 수정해야 합니다.
         }
 
         for (int i = 0; i < maxHealthImages; i++) {
@@ -254,12 +247,16 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
     }
     private void checkItemCollision() {
         if (player.getBounds().intersects(item.getBounds())) {
-            // 플레이어와 아이템이 충돌했을 때 처리할 로직을 작성합니다.
-            player.heal(HEAL_AMOUNT); // 플레이어의 체력을 회복합니다.
-            isItemActive = false; // 아이템을 비활성화합니다.
+            player.heal();
+            isItemActive = false; // Deactivate the item
         }
     }
 
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -308,10 +305,6 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         }
     }
 
-
-    @Override
-    public void keyTyped(KeyEvent e) {}
-
     private void firePlayerProjectile() {
         int projectileX = (int) (player.getX() + player.getWidth() / 2 - PROJECTILE_WIDTH / 2);
         int projectileY = (int) (player.getY() + player.getHeight() / 2 - PROJECTILE_HEIGHT / 2);
@@ -337,7 +330,6 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
     private class Player extends Rectangle {
         private static final long serialVersionUID = 1L;
         private static final int PLAYER_SPEED = 3;
-        private int health;
         private static final int MAX_HEALTH = 100;
         private static final int HEAL_AMOUNT = 20;
 
@@ -347,23 +339,13 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
 
         public Player(int x, int y, int width, int height) {
             super(x, y, width, height);
-            health = MAX_HEALTH;
 
         }
-        public void decreaseHealth(int amount) {
-            health -= amount;
-        }
-        public int getHealth() {
-            return health;
-        }
-        public void setHealth(int health) {
-            this.health = health;
-        }
         public void heal() {
-            if (health + HEAL_AMOUNT <= MAX_HEALTH) {
-                health += HEAL_AMOUNT;
+            if (playerHealth + HEAL_AMOUNT <= MAX_HEALTH) {
+                playerHealth += HEAL_AMOUNT;
             } else {
-                health = MAX_HEALTH;
+                playerHealth = MAX_HEALTH;
             }
         }
 
@@ -385,8 +367,6 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         public void draw(Graphics g, String imagePath) {
             ImageIcon icon = new ImageIcon(imagePath);
             g.drawImage(icon.getImage(), x, y, width, height, null);
-
-
         }
     }
 
@@ -431,12 +411,6 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         public void decreaseProjectileCooldown() {
             if (projectileCooldown > 0) {
                 projectileCooldown--;
-            }
-        }
-
-        public void decreaseHealth() {
-            if (health > 0) {
-                health--;
             }
         }
 
@@ -508,4 +482,3 @@ public class GameDemo extends JPanel implements ActionListener, KeyListener {
         }
     }
 }
-
