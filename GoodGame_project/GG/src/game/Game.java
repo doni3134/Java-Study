@@ -29,11 +29,14 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     public static final int MONSTER_PROJECTILE_COOLDOWN = 100;
 
 
+
+
     private Item item;
     private Timer itemTimer;
     private boolean isItemActive;
     private Player player;
     private Monster monster;
+
     private ArrayList<Projectile> playerProjectiles;
     private ArrayList<Projectile> monsterProjectiles;
     private Timer timer;
@@ -49,6 +52,9 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     private boolean spacePressed;
     private int lastPressedDirection;
 
+    private Timer monsterAttackTimer;  // 몬스터 공격 타이머
+    private int projectileCount;
+
 
 
     public Game() {
@@ -56,6 +62,10 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         setBackground(Color.BLACK);
         setFocusable(true);
         addKeyListener(this);
+
+        monsterAttackTimer = new Timer(1000, this);  // 1초마다 타이머 이벤트 발생
+        monsterAttackTimer.start();
+        projectileCount = 0;
 
         playerHealth = 100;
         monsterHealth = 1000;
@@ -98,33 +108,28 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         player.move(upPressed, downPressed, leftPressed, rightPressed);
         monster.chasePlayer(player);
 
-        if (monster.getProjectileCooldown() == 0) {
-            int direction = (int) (Math.random() * 4);
-            int projectileX = (int) (monster.getX() + monster.getWidth() / 2 - PROJECTILE_WIDTH / 2);
-            int projectileY = (int) (monster.getY() + monster.getHeight() / 2 - PROJECTILE_HEIGHT / 2);
-            Projectile projectile = null;
+        if (e.getSource() == monsterAttackTimer) {
+            if (projectileCount < 36) {  // 발사체 수가 36개 미만일 때에만 발사
+                double angle = projectileCount * (360.0 / 36);  // 원형으로 발사체를 배치하기 위한 각도 계산
+                double radians = Math.toRadians(angle);  // 각도를 라디안으로 변환
+                double dx = Math.cos(radians) * MONSTER_PROJECTILE_SPEED;  // X축 이동량 계산
+                double dy = Math.sin(radians) * MONSTER_PROJECTILE_SPEED;  // Y축 이동량 계산
 
-            switch (direction) {
-                case 0:  // Up
-                    projectile = new Projectile(projectileX, projectileY, 0, -MONSTER_PROJECTILE_SPEED);
-                    break;
-                case 1:  // Down
-                    projectile = new Projectile(projectileX, projectileY, 0, MONSTER_PROJECTILE_SPEED);
-                    break;
-                case 2:  // Left
-                    projectile = new Projectile(projectileX, projectileY, -MONSTER_PROJECTILE_SPEED, 0);
-                    break;
-                case 3:  // Right
-                    projectile = new Projectile(projectileX, projectileY, MONSTER_PROJECTILE_SPEED, 0);
-                    break;
-            }
+                int projectileX = (int) (monster.getX() + monster.getWidth() / 2 - PROJECTILE_WIDTH / 2);
+                int projectileY = (int) (monster.getY() + monster.getHeight() / 2 - PROJECTILE_HEIGHT / 2);
 
-            if (projectile != null) {
-                monsterProjectiles.add(projectile);
-                monster.resetProjectileCooldown();
+                for (int i = 0; i < 36; i++) {
+                    Projectile projectile = new Projectile(projectileX, projectileY, dx, dy);
+                    monsterProjectiles.add(projectile);
+
+                    angle += 10; // 10도씩 증가하여 다음 발사체의 각도 계산
+                    radians = Math.toRadians(angle);
+                    dx = Math.cos(radians) * MONSTER_PROJECTILE_SPEED;
+                    dy = Math.sin(radians) * MONSTER_PROJECTILE_SPEED;
+                }
+
+                projectileCount += 36;  // 발사체 수 증가
             }
-        } else {
-            monster.decreaseProjectileCooldown();
         }
 
         for (int i = 0; i < playerProjectiles.size(); i++) {
@@ -139,7 +144,7 @@ public class Game extends JPanel implements ActionListener, KeyListener {
                 i--;
                 monsterHealth -= 50;
                 if (monsterHealth <= 0) {
-                    // 몬스터 격파, 게임 오버 로직 처리
+                                  // 몬스터 격파, 게임 오버 로직 처리
                     JOptionPane.showMessageDialog(null, "승리하였습니다!");
                 }
             }

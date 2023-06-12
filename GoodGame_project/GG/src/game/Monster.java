@@ -3,16 +3,30 @@ package game;
 import javax.swing.*;
 import java.awt.*;
 
-import static game.Game.MONSTER_PROJECTILE_COOLDOWN;
+//public class Monster extends Rectangle {
+//    private static final int MONSTER_SPEED = 1;
+//    private int projectileCooldown;
+//
+//    public Monster(int x, int y, int width, int height) {
+//        super(x, y, width, height);
+//        projectileCooldown = 0;
+//    }
+
 
 public class Monster extends Rectangle {
     private static final int MONSTER_SPEED = 1;
     private int projectileCooldown;
+    private Timer monsterAttackTimer;  // 몬스터 공격 타이머
 
     public Monster(int x, int y, int width, int height) {
         super(x, y, width, height);
         projectileCooldown = 0;
+        monsterAttackTimer = new Timer(1000, e -> decreaseProjectileCooldown());  // 1초마다 projectileCooldown 값을 감소시킴
+        monsterAttackTimer.start();
     }
+
+
+
 
     public void chasePlayer(Player player) {
         int playerX = (int) player.getX();
@@ -36,7 +50,7 @@ public class Monster extends Rectangle {
     }
 
     public void resetProjectileCooldown() {
-        projectileCooldown = MONSTER_PROJECTILE_COOLDOWN;
+        projectileCooldown = 0;
     }
 
     public void decreaseProjectileCooldown() {
@@ -44,6 +58,8 @@ public class Monster extends Rectangle {
             projectileCooldown--;
         }
     }
+
+
 
     public void draw(Graphics g, String imagePath) {
         ImageIcon icon = new ImageIcon(imagePath);
