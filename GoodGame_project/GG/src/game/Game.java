@@ -16,8 +16,8 @@ import java.util.ArrayList;
 
 public class Game extends JPanel implements ActionListener, KeyListener {
 
-    public static final int SCREEN_WIDTH = 800;
-    public static final int SCREEN_HEIGHT = 600;
+    public static final int SCREEN_WIDTH = 1280;
+    public static final int SCREEN_HEIGHT = 900;
     private static final int PLAYER_WIDTH = 50;
     private static final int PLAYER_HEIGHT = 50;
     private static final int MONSTER_WIDTH = 50;
@@ -26,7 +26,10 @@ public class Game extends JPanel implements ActionListener, KeyListener {
     public static final int PROJECTILE_HEIGHT = 10;
     private static final int PLAYER_PROJECTILE_SPEED = 5;
     private static final int MONSTER_PROJECTILE_SPEED = 3;
-    public static final int MONSTER_PROJECTILE_COOLDOWN = 100;
+    public static final int MONSTER_PROJECTILE_COOLDOWN = 10;
+
+    private static final int DB_ROTATION_COUNT = 8; // 회전하는 이미지 수
+    private static final int DB_ROTATION_RADIUS = 10;
 
 
 
@@ -54,6 +57,8 @@ public class Game extends JPanel implements ActionListener, KeyListener {
 
     private Timer monsterAttackTimer;  // 몬스터 공격 타이머
     private int projectileCount;
+    private int monsterRotationAngle;
+
 
 
 
@@ -62,6 +67,9 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         setBackground(Color.BLACK);
         setFocusable(true);
         addKeyListener(this);
+
+        monsterRotationAngle = 0;
+
 
         monsterAttackTimer = new Timer(1000, this);  // 1초마다 타이머 이벤트 발생
         monsterAttackTimer.start();
@@ -108,8 +116,9 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         player.move(upPressed, downPressed, leftPressed, rightPressed);
         monster.chasePlayer(player);
 
+
         if (e.getSource() == monsterAttackTimer) {
-            if (projectileCount < 36) {  // 발사체 수가 36개 미만일 때에만 발사
+            if (projectileCount < 15) {  // 발사체 수가 36개 미만일 때에만 발사
                 double angle = projectileCount * (360.0 / 36);  // 원형으로 발사체를 배치하기 위한 각도 계산
                 double radians = Math.toRadians(angle);  // 각도를 라디안으로 변환
                 double dx = Math.cos(radians) * MONSTER_PROJECTILE_SPEED;  // X축 이동량 계산
@@ -118,17 +127,19 @@ public class Game extends JPanel implements ActionListener, KeyListener {
                 int projectileX = (int) (monster.getX() + monster.getWidth() / 2 - PROJECTILE_WIDTH / 2);
                 int projectileY = (int) (monster.getY() + monster.getHeight() / 2 - PROJECTILE_HEIGHT / 2);
 
-                for (int i = 0; i < 36; i++) {
+                for (int i = 0; i < 15; i++) {
                     Projectile projectile = new Projectile(projectileX, projectileY, dx, dy);
                     monsterProjectiles.add(projectile);
 
-                    angle += 10; // 10도씩 증가하여 다음 발사체의 각도 계산
+                    angle += 24; // 10도씩 증가하여 다음 발사체의 각도 계산
                     radians = Math.toRadians(angle);
                     dx = Math.cos(radians) * MONSTER_PROJECTILE_SPEED;
                     dy = Math.sin(radians) * MONSTER_PROJECTILE_SPEED;
                 }
 
                 projectileCount += 36;  // 발사체 수 증가
+            } else {
+                projectileCount = 0;
             }
         }
 
@@ -236,12 +247,11 @@ public class Game extends JPanel implements ActionListener, KeyListener {
         }
 
         for (Projectile projectile : monsterProjectiles) {
-            projectile.draw(g, "images/A.png");
+            projectile.draw(g, "images/HTML5.png");
         }
     }
     private void checkItemCollision() {
         if (player.getBounds().intersects(item.getBounds())) {
-            //System.out.println("작동2");
             player.heal();
             isItemActive = false; // Deactivate the item
         }
