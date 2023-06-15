@@ -1,4 +1,4 @@
-package page;
+package com.store.page;
 
 import javax.swing.*;
 import java.awt.*;
@@ -171,6 +171,6 @@ public class AdminPage extends JPanel {
 
         frame.add(mPagePanel);
         mPagePanel.add("", new AdminPage(mPagePanel));
-        mPagePanel.setVisible(true);
+        frame.setVisible(true);
     }
 }

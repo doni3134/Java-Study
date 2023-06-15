@@ -1,4 +1,4 @@
-package member;
+package com.store.member;
 
 public class User extends Person{
     public User(String name, int phone){

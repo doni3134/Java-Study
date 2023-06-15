@@ -1,16 +1,9 @@
-package page;
+package com.store.page;
 
-import member.Admin;
+import com.store.member.Admin;
 
 import javax.swing.*;
-
-import java.awt.Toolkit;
-import java.awt.Font;
-import java.awt.Dimension;
-import java.awt.Color;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
 
 public class AdminLoginDialog extends JDialog {
     JTextField pwField, idField;

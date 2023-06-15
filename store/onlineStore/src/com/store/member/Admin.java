@@ -1,4 +1,4 @@
-package member;
+package com.store.member;
 
 public class Admin extends Person{
     private String id = "Admin";
