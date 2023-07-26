@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<h1>Send JWT </h1>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="js/apiconnect.js"></script>
+<script>
+
+
+    getServerData('/api/sample/doA', {page:1, size:10})
+        .then(data => {
+        console.log("success ")
+        console.log(data)
+    }).catch(err => {
+        console.log("error")
+        console.log(err)
+
+        if(err.ERROR === 'RefreshFail'){
+            alert("다시 토큰을 발급받아야 합니다.")
+        }
+    })
+
+</script>
+
+
+</body>
+</html>

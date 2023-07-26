@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Make Token Client</h1>
+
+<input type="text" id="mid" value="apiuser1">
+<input type="text" id="mpw" value="1111">
+<button id="btn">GET TOKEN</button>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="js/apiconnect.js"></script>
+<script>
+
+    document.querySelector("#btn").addEventListener("click",function(){
+        console.log("click...")
+
+        getTokens(document.querySelector("#mid").value, document.querySelector("#mpw").value)
+        .catch(err => {
+            console.log(err.response)
+            alert(err.response.data.RESULT)
+        })
+
+    },false)
+
+</script>
+</body>
+</html>
